@@ -2,20 +2,18 @@ const express = require("express");
 const {
   processPayment,
   sendStripeApiKey,
-  refundPayment,
+  // refundPayment,
+  // createPlan,
 } = require("../controllers/paymentController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const { isAuthenticated } = require("../middleware/auth");
 
-router
-  .route("/payment/process")
-  .post(isAuthenticated, authorizeRole("admin"), processPayment);
-router
-  .route("/payment/refundPayment")
-  .get(isAuthenticated, authorizeRole("admin"), refundPayment);
+router.route("/payment/process").post(isAuthenticated, processPayment);
+router.route("/stripeapikey").get(isAuthenticated, sendStripeApiKey);
 
-router
-  .route("/stripeapikey")
-  .get(isAuthenticated, authorizeRole("admin"), sendStripeApiKey);
+// router.route("/payment/refundPayment").get(isAuthenticated, refundPayment);
+// router
+//   .route("/createPlan")
+//   .get(isAuthenticated, authorizeRole("admin"), createPlan);
 
 module.exports = router;

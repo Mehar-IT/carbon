@@ -4,6 +4,8 @@ const user = require("./routes/userRoute");
 const payment = require("./routes/paymentRoute");
 const fund = require("./routes/fundRoute");
 const tax = require("./routes/taxRoute");
+const plan = require("./routes/planRoute");
+const subscription = require("./routes/subscriptionRoute");
 const errorMiddleWare = require("./middleware/error");
 const notFoundError = require("./middleware/404");
 const cookieParser = require("cookie-parser");
@@ -27,6 +29,8 @@ app.use("/api/v1", user);
 app.use("/api/v1", payment);
 app.use("/api/v1", fund);
 app.use("/api/v1", tax);
+app.use("/api/v1", plan);
+app.use("/api/v1", subscription);
 
 app.use(notFoundError);
 app.use(errorMiddleWare);
