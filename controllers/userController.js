@@ -6,10 +6,11 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 exports.registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   const user = await User.create({
-    name,
+    firstName,
+    lastName,
     email,
     password,
     avatar: {
@@ -192,7 +193,12 @@ exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
-  const newUserData = { name: req.body.name, email: req.body.email };
+  const newUserData = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    password: req.body.password,
+  };
 
   await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -204,6 +210,20 @@ exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
     success: true,
   });
 });
+
+// exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
+//   const newUserData = { name: req.body.name, email: req.body.email };
+
+//   await User.findByIdAndUpdate(req.user.id, newUserData, {
+//     new: true,
+//     runValidators: true,
+//     userFindandModify: false,
+//   });
+
+//   res.status(200).json({
+//     success: true,
+//   });
+// });
 
 exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
   const users = await User.find();
@@ -285,7 +305,8 @@ exports.getsindleUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 
 exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const newUserData = {
-    name: req.body.name,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     email: req.body.email,
     role: req.body.role,
   };
