@@ -1,7 +1,7 @@
 const Subscription = require("../models/subscriptionModel");
 const Plan = require("../models/planModel");
 const asyncErrorHandler = require("../middleware/asyncErrorHandler");
-const ErrorHandler = require("../utils/errorhandlers");
+const ErrorHandler = require("../utils/errorHandlers");
 
 exports.addSubscription = asyncErrorHandler(async (req, res, next) => {
   const plan = await Plan.findById(req.query.planID);

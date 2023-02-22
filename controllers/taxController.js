@@ -1,6 +1,6 @@
 const Taxes = require("../models/taxesModel");
 const asyncErrorHandler = require("../middleware/asyncErrorHandler");
-const ErrorHandler = require("../utils/errorhandlers");
+const ErrorHandler = require("../utils/errorHandlers");
 
 exports.createTax = asyncErrorHandler(async (req, res) => {
   const {

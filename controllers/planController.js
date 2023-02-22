@@ -1,6 +1,6 @@
 const Plan = require("../models/planModel");
 const asyncErrorHandler = require("../middleware/asyncErrorHandler");
-const ErrorHandler = require("../utils/errorhandlers");
+const ErrorHandler = require("../utils/errorHandlers");
 
 exports.createPlan = asyncErrorHandler(async (req, res) => {
   const { name, price, features, endDate } = req.body;

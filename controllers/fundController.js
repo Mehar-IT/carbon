@@ -2,7 +2,7 @@ const Funds = require("../models/fundsModel");
 const User = require("../models/userModel");
 const Taxes = require("../models/taxesModel");
 const asyncErrorHandler = require("../middleware/asyncErrorHandler");
-const ErrorHandler = require("../utils/errorhandlers");
+const ErrorHandler = require("../utils/errorHandlers");
 
 exports.addFund = asyncErrorHandler(async (req, res) => {
   const Tax = await Taxes.findById("63eb61e32852fd15b2373e39");
