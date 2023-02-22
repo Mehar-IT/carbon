@@ -12,7 +12,7 @@ const { isAuthenticated, authorizeRole } = require("../middleware/auth");
 
 router.route("/addSubscription").post(isAuthenticated, addSubscription);
 router
-  .route("/getallSubscriptions/:id")
+  .route("/getallSubscriptions")
   .get(isAuthenticated, authorizeRole("admin"), getallSubscriptions);
 router.route("/mySubscriptions").get(isAuthenticated, mySubscriptions);
 router
