@@ -4,6 +4,7 @@ const asyncErrorHandler = require("../middleware/asyncErrorHandler");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const cloudinary = require("cloudinary");
 
 function generateUsername(name) {
   const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -27,14 +28,20 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
     uniqueName = generateUsername(userName?.userName);
   }
 
+  const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+    folder: "profiles",
+    width: 150,
+    crop: "scale",
+  });
+
   const user = await User.create({
     name,
     userName: uniqueName,
     email,
     password,
     avatar: {
-      public_id: "unknown public id",
-      url: "https://res.cloudinary.com/learn2code/image/upload/v1663160482/aqgztfqitit4okoxmrug.png",
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
     },
   });
 
@@ -214,9 +221,23 @@ exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
 exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
   const newUserData = {
     name: req.body.name,
-    // email: req.body.email,
     password: req.body.password,
   };
+
+  if (req.body.avatar !== "") {
+    const user = await User.findById(req.user.id);
+    const imageId = user.avatar.public_id;
+    await cloudinary.v2.uploader.destroy(imageId);
+    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
+    newUserData.avatar = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
+  }
 
   await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -352,6 +373,9 @@ exports.deleteUserByAdmin = asyncErrorHandler(async (req, res, next) => {
       new ErrorHandler(`user not found with id ${req.params.id}`, 404)
     );
   }
+
+  const imageId = user.avatar.public_id;
+  await cloudinary.v2.uploader.destroy(imageId);
 
   await user.remove();
 
