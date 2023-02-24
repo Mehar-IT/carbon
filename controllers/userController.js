@@ -5,12 +5,31 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
+function generateUsername(name) {
+  const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+  var timestamp = Math.floor(new Date().getTime() / 1000);
+  const username = cleanName + timestamp;
+
+  return username;
+}
+
 exports.registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { name, email, password } = req.body;
+
+  const userName = await User.findOne({
+    userName: email.match(/^([^@]*)@/)[1],
+  });
+
+  let uniqueName = email.match(/^([^@]*)@/)[1];
+
+  if (userName?.userName) {
+    uniqueName = generateUsername(userName?.userName);
+  }
 
   const user = await User.create({
-    firstName,
-    lastName,
+    name,
+    userName: uniqueName,
     email,
     password,
     avatar: {
@@ -27,7 +46,7 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email: user.email,
-      subject: `Ecommerce OTP `,
+      subject: `Carbon Project OTP `,
       message,
     });
 
@@ -68,7 +87,7 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
     try {
       await sendEmail({
         email: user.email,
-        subject: `Ecommerce OTP `,
+        subject: `Carbon Porject OTP `,
         message,
       });
 
@@ -194,9 +213,8 @@ exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
 
 exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
   const newUserData = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
+    name: req.body.name,
+    // email: req.body.email,
     password: req.body.password,
   };
 
@@ -271,7 +289,7 @@ exports.resentOTP = asyncErrorHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email: user.email,
-      subject: `Ecommerce OTP `,
+      subject: `Carbon Project OTP `,
       message,
     });
 
@@ -305,9 +323,8 @@ exports.getsindleUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 
 exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const newUserData = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
+    name: req.body.name,
+    // email: req.body.email,
     role: req.body.role,
   };
 
