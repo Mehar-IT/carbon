@@ -15,10 +15,6 @@ var favicon = require("serve-favicon");
 const path = require("path");
 const fileUpload = require("express-fileupload");
 
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  require("dotenv").config({ path: "config/config.env" });
-}
-
 app.use(favicon(path.join(__dirname, "public", "icons", "carbon.png")));
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
