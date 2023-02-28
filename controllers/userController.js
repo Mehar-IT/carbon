@@ -214,13 +214,14 @@ exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id).select("+password");
+  const user = await User.findById(req.user.id);
+  // const user = await User.findById(req.user.id).select("+password");
 
-  const isPasswordMatch = await user.comparePassowrd(req.body.password);
+  // const isPasswordMatch = await user.comparePassowrd(req.body.password);
 
-  if (!isPasswordMatch) {
-    return next(new ErrorHandler("Invalid old password", 400));
-  }
+  // if (!isPasswordMatch) {
+  //   return next(new ErrorHandler("Invalid old password", 400));
+  // }
 
   user.email = req.body.email;
   user.verified = undefined;
