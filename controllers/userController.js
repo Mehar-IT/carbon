@@ -4,6 +4,8 @@ const asyncErrorHandler = require("../middleware/asyncErrorHandler");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const cloudinary = require("cloudinary");
+const { isUndefined } = require("util");
 
 function generateUsername(name) {
   const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -33,8 +35,8 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
     email,
     password,
     avatar: {
-      public_id: "unknown public id",
-      url: "https://res.cloudinary.com/learn2code/image/upload/v1663160482/aqgztfqitit4okoxmrug.png",
+      public_id: "random",
+      url: "https://www.seekpng.com/png/detail/110-1100707_person-avatar-placeholder.png",
     },
   });
 
@@ -211,12 +213,70 @@ exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
+exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select("+password");
+
+  const isPasswordMatch = await user.comparePassowrd(req.body.password);
+
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Invalid old password", 400));
+  }
+
+  user.email = req.body.email;
+  user.verified = undefined;
+
+  const token = user.otpGeneration();
+  await user.save({ validateBeforeSave: false });
+
+  const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: `Carbon Project OTP `,
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email OPT sent to ${user.email} successfully`,
+    });
+  } catch (error) {
+    user.otpToken = undefined;
+    user.optExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
 exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
   const newUserData = {
     name: req.body.name,
-    // email: req.body.email,
-    password: req.body.password,
   };
+
+  if (req.body.password !== "" && req.body.password !== undefined) {
+    const user = await User.findById(req.user.id).select("+password");
+    user.password = req.body.password;
+    await user.save();
+  }
+
+  if (req.body.avatar !== "" && req.body.avatar !== undefined) {
+    const user = await User.findById(req.user.id);
+    const imageId = user.avatar.public_id;
+    if (imageId !== "random") {
+      await cloudinary.v2.uploader.destroy(imageId);
+    }
+    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
+    newUserData.avatar = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
+  }
 
   await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -228,9 +288,25 @@ exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
     success: true,
   });
 });
-
 // exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
-//   const newUserData = { name: req.body.name, email: req.body.email };
+//   const newUserData = {
+//     name: req.body.name,
+//   };
+
+//   if (req.body.avatar !== "") {
+//     const user = await User.findById(req.user.id);
+//     const imageId = user.avatar.public_id;
+//     await cloudinary.v2.uploader.destroy(imageId);
+//     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+//       folder: "avatars",
+//       width: 150,
+//       crop: "scale",
+//     });
+//     newUserData.avatar = {
+//       public_id: myCloud.public_id,
+//       url: myCloud.secure_url,
+//     };
+//   }
 
 //   await User.findByIdAndUpdate(req.user.id, newUserData, {
 //     new: true,
@@ -352,6 +428,9 @@ exports.deleteUserByAdmin = asyncErrorHandler(async (req, res, next) => {
       new ErrorHandler(`user not found with id ${req.params.id}`, 404)
     );
   }
+
+  const imageId = user.avatar.public_id;
+  await cloudinary.v2.uploader.destroy(imageId);
 
   await user.remove();
 

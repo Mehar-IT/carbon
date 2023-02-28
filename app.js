@@ -13,16 +13,14 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 var favicon = require("serve-favicon");
 const path = require("path");
-
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  require("dotenv").config({ path: "config/config.env" });
-}
+const fileUpload = require("express-fileupload");
 
 app.use(favicon(path.join(__dirname, "public", "icons", "carbon.png")));
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload());
 
 app.get("/", (req, res) => {
   res.status(200).json("app is runnig");
