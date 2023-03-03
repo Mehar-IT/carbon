@@ -44,7 +44,6 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
   });
 
   const token = user.otpGeneration();
-  // await user.save({ validateBeforeSave: false });
   await user.save({ validateBeforeSave: true });
 
   const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
@@ -128,7 +127,8 @@ exports.logoutUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const { email } = req.body;
+  const user = await User.findOne({ "emails.email": email });
   if (!user) {
     return next(new ErrorHandler("user not found"), 404);
   }
@@ -138,20 +138,20 @@ exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
   const resetPassword = `${req.protocol}://${req.get(
     "host"
-  )}/password/reset/${resetToken}`;
+  )}/api/v1/password/reset/${resetToken}`;
 
   const message = `your password reset token is :- \n\n ${resetPassword} \n\n If you have not requested this email then, please ignore it`;
 
   try {
     await sendEmail({
-      email: user.email,
+      email: email,
       subject: `Ecommerce Password Recovery`,
       message,
     });
 
     res.status(200).json({
       success: true,
-      message: `Email sent to ${user.email} successfully`,
+      message: `Email sent to ${email} successfully`,
     });
   } catch (error) {
     user.resetPasswordToken = undefined;
@@ -202,60 +202,6 @@ exports.getUserDetails = asyncErrorHandler(async (req, res) => {
     user,
   });
 });
-
-// exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
-//   const user = await User.findById(req.user.id).select("+password");
-//   const isPasswordMatch = await user.comparePassowrd(req.body.oldPassword);
-
-//   if (!isPasswordMatch) {
-//     return next(new ErrorHandler("Invalid old password", 400));
-//   }
-//   if (req.body.newPassword !== req.body.confirmPassword) {
-//     return next(new ErrorHandler("password does not match", 400));
-//   }
-//   user.password = req.body.newPassword;
-//   await user.save();
-
-//   sendToken(user, 200, res);
-// });
-
-// exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
-//   const user = await User.findById(req.user.id);
-//   // const user = await User.findById(req.user.id).select("+password");
-
-//   // const isPasswordMatch = await user.comparePassowrd(req.body.password);
-
-//   // if (!isPasswordMatch) {
-//   //   return next(new ErrorHandler("Invalid old password", 400));
-//   // }
-
-//   // user.email = req.body.email;
-//   // user.verified = undefined;
-
-//   const token = user.otpGeneration();
-//   await user.save({ validateBeforeSave: false });
-
-//   const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
-
-//   try {
-//     await sendEmail({
-//       email: user.email,
-//       subject: `Carbon Project OTP `,
-//       message,
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       message: `Email OPT sent to ${user.email} successfully`,
-//     });
-//   } catch (error) {
-//     user.otpToken = undefined;
-//     user.optExpire = undefined;
-//     await user.save({ validateBeforeSave: false });
-
-//     return next(new ErrorHandler(error.message, 500));
-//   }
-// });
 
 exports.updateUserProfile = asyncErrorHandler(async (req, res, next) => {
   const { firstName, lastName, email, avatar, password } = req.body;
@@ -361,37 +307,6 @@ exports.updateUserProfile = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
-// exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
-//   const newUserData = {
-//     name: req.body.name,
-//   };
-
-//   if (req.body.avatar !== "") {
-//     const user = await User.findById(req.user.id);
-//     const imageId = user.avatar.public_id;
-//     await cloudinary.v2.uploader.destroy(imageId);
-//     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-//       folder: "carbonAvatars",
-//       width: 150,
-//       crop: "scale",
-//     });
-//     newUserData.avatar = {
-//       public_id: myCloud.public_id,
-//       url: myCloud.secure_url,
-//     };
-//   }
-
-//   await User.findByIdAndUpdate(req.user.id, newUserData, {
-//     new: true,
-//     runValidators: true,
-//     userFindandModify: false,
-//   });
-
-//   res.status(200).json({
-//     success: true,
-//   });
-// });
-
 exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
   const users = await User.find();
   res.status(200).json({
@@ -401,7 +316,6 @@ exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.validateOPT = asyncErrorHandler(async (req, res, next) => {
-  // const otpToken = req.params.otp;
   const { email, otp } = req.body;
 
   const user = await User.findOne({
@@ -489,7 +403,8 @@ exports.getsindleUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 
 exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const newUserData = {
-    name: req.body.name,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     role: req.body.role,
   };
 
@@ -528,3 +443,88 @@ exports.deleteUserByAdmin = asyncErrorHandler(async (req, res, next) => {
     message: "User Deleted Successfully",
   });
 });
+
+// exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
+//   const newUserData = {
+//     name: req.body.name,
+//   };
+
+//   if (req.body.avatar !== "") {
+//     const user = await User.findById(req.user.id);
+//     const imageId = user.avatar.public_id;
+//     await cloudinary.v2.uploader.destroy(imageId);
+//     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+//       folder: "carbonAvatars",
+//       width: 150,
+//       crop: "scale",
+//     });
+//     newUserData.avatar = {
+//       public_id: myCloud.public_id,
+//       url: myCloud.secure_url,
+//     };
+//   }
+
+//   await User.findByIdAndUpdate(req.user.id, newUserData, {
+//     new: true,
+//     runValidators: true,
+//     userFindandModify: false,
+//   });
+
+//   res.status(200).json({
+//     success: true,
+//   });
+// });
+
+// exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
+//   const user = await User.findById(req.user.id).select("+password");
+//   const isPasswordMatch = await user.comparePassowrd(req.body.oldPassword);
+
+//   if (!isPasswordMatch) {
+//     return next(new ErrorHandler("Invalid old password", 400));
+//   }
+//   if (req.body.newPassword !== req.body.confirmPassword) {
+//     return next(new ErrorHandler("password does not match", 400));
+//   }
+//   user.password = req.body.newPassword;
+//   await user.save();
+
+//   sendToken(user, 200, res);
+// });
+
+// exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
+//   const user = await User.findById(req.user.id);
+//   // const user = await User.findById(req.user.id).select("+password");
+
+//   // const isPasswordMatch = await user.comparePassowrd(req.body.password);
+
+//   // if (!isPasswordMatch) {
+//   //   return next(new ErrorHandler("Invalid old password", 400));
+//   // }
+
+//   // user.email = req.body.email;
+//   // user.verified = undefined;
+
+//   const token = user.otpGeneration();
+//   await user.save({ validateBeforeSave: false });
+
+//   const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
+
+//   try {
+//     await sendEmail({
+//       email: user.email,
+//       subject: `Carbon Project OTP `,
+//       message,
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Email OPT sent to ${user.email} successfully`,
+//     });
+//   } catch (error) {
+//     user.otpToken = undefined;
+//     user.optExpire = undefined;
+//     await user.save({ validateBeforeSave: false });
+
+//     return next(new ErrorHandler(error.message, 500));
+//   }
+// });

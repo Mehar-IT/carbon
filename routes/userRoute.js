@@ -26,9 +26,7 @@ router.route("/resentOTP/:email").post(resentOTP);
 router.route("/password/forgot").post(forgotPassword);
 router.route("/password/reset/:token").put(resetPassword);
 router.route("/logout").get(logoutUser);
-// router.route("/password/update").put(isAuthenticated, updatePassword);
 router.route("/me/update").put(isAuthenticated, updateUserProfile);
-// router.route("/me/updateEmail").put(isAuthenticated, updateEmail);
 router.route("/me/").get(isAuthenticated, getUserDetails);
 router
   .route("/admin/users")
@@ -39,5 +37,7 @@ router
   .get(isAuthenticated, authorizeRole("admin"), getsindleUserByAdmin)
   .put(isAuthenticated, authorizeRole("admin"), updateUserByAdmin)
   .delete(isAuthenticated, authorizeRole("admin"), deleteUserByAdmin);
+// router.route("/password/update").put(isAuthenticated, updatePassword);
+// router.route("/me/updateEmail").put(isAuthenticated, updateEmail);
 
 module.exports = router;
