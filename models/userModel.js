@@ -5,9 +5,15 @@ const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
-    required: [true, "please enter your name"],
+    required: [true, "please enter your first name"],
+    maxLength: [30, "name can not exceed 30 character "],
+    minLength: [4, "name should have more than 4 character"],
+  },
+  lastName: {
+    type: String,
+    required: [true, "please enter your last name"],
     maxLength: [30, "name can not exceed 30 character "],
     minLength: [4, "name should have more than 4 character"],
   },
@@ -16,11 +22,22 @@ const userSchema = new mongoose.Schema({
     required: [true, "please enter your User Name"],
     unique: true,
   },
-  email: {
-    type: String,
-    required: [true, "please enter your email"],
-    unique: true,
-    validate: [validator.isEmail, "please enter a valid email"],
+  emails: {
+    type: [
+      {
+        email: {
+          type: String,
+          required: [true, "please enter your email"],
+          validate: [validator.isEmail, "please enter a valid email"],
+          unique: true,
+        },
+        isVerified: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+    required: true,
   },
   password: {
     type: String,
@@ -38,10 +55,10 @@ const userSchema = new mongoose.Schema({
       required: true,
     },
   },
-  verified: {
-    type: Boolean,
-    default: false,
-  },
+  // verified: {
+  //   type: Boolean,
+  //   default: false,
+  // },
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -82,7 +99,7 @@ userSchema.methods.resetPassword = function () {
 };
 
 userSchema.methods.otpGeneration = function () {
-  const opt = Math.floor(1000 + Math.random() * 9000);
+  const opt = Math.floor(10000 + Math.random() * 9000);
   this.otpToken = opt;
   this.optExpire = Date.now() + 15 * 60 * 1000;
   return opt;

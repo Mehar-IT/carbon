@@ -21,6 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileUpload());
+// app.use(fileUpload({ useTempFiles: true }));
 
 app.get("/", (req, res) => {
   res.status(200).json("app is runnig");

@@ -5,7 +5,6 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
-const { isUndefined } = require("util");
 
 function generateUsername(name) {
   const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -17,22 +16,26 @@ function generateUsername(name) {
 }
 
 exports.registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
+
+  let uniqueName = `${firstName}${lastName}`;
 
   const userName = await User.findOne({
-    userName: email.match(/^([^@]*)@/)[1],
+    // userName: email.match(/^([^@]*)@/)[1],
+    userName: uniqueName,
   });
 
-  let uniqueName = email.match(/^([^@]*)@/)[1];
+  // let uniqueName = email.match(/^([^@]*)@/)[1];
 
   if (userName?.userName) {
     uniqueName = generateUsername(userName?.userName);
   }
 
-  const user = await User.create({
-    name,
+  const user = await User({
+    firstName,
+    lastName,
     userName: uniqueName,
-    email,
+    emails: [{ email }],
     password,
     avatar: {
       public_id: "random",
@@ -41,20 +44,21 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
   });
 
   const token = user.otpGeneration();
-  await user.save({ validateBeforeSave: false });
+  // await user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: true });
 
   const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
 
   try {
     await sendEmail({
-      email: user.email,
+      email,
       subject: `Carbon Project OTP `,
       message,
     });
 
     res.status(200).json({
       success: true,
-      message: `Email OPT sent to ${user.email} successfully`,
+      message: `Email OPT sent to ${email} successfully`,
     });
   } catch (error) {
     user.otpToken = undefined;
@@ -70,7 +74,9 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   if (!email || !password) {
     return next(new ErrorHandler("Please enter email and password", 400));
   }
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ "emails.email": email }).select(
+    "+password"
+  );
 
   if (!user) {
     return next(new ErrorHandler("Invalid email and password", 401));
@@ -80,7 +86,7 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   if (!isPasswordMatch) {
     return next(new ErrorHandler("Invalid email and password", 401));
   }
-  if (!user.verified) {
+  if (!user.emails[0].isVerified) {
     const token = user.otpGeneration();
     await user.save({ validateBeforeSave: false });
 
@@ -88,14 +94,14 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
 
     try {
       await sendEmail({
-        email: user.email,
+        email,
         subject: `Carbon Porject OTP `,
         message,
       });
 
       return res.status(200).json({
         success: true,
-        message: `you are not Verified!!! OPT sent to ${user.email} successfully`,
+        message: `you are not Verified!!! OPT sent to ${email} successfully`,
       });
     } catch (error) {
       user.otpToken = undefined;
@@ -197,82 +203,140 @@ exports.getUserDetails = asyncErrorHandler(async (req, res) => {
   });
 });
 
-exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
+// exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
+//   const user = await User.findById(req.user.id).select("+password");
+//   const isPasswordMatch = await user.comparePassowrd(req.body.oldPassword);
+
+//   if (!isPasswordMatch) {
+//     return next(new ErrorHandler("Invalid old password", 400));
+//   }
+//   if (req.body.newPassword !== req.body.confirmPassword) {
+//     return next(new ErrorHandler("password does not match", 400));
+//   }
+//   user.password = req.body.newPassword;
+//   await user.save();
+
+//   sendToken(user, 200, res);
+// });
+
+// exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
+//   const user = await User.findById(req.user.id);
+//   // const user = await User.findById(req.user.id).select("+password");
+
+//   // const isPasswordMatch = await user.comparePassowrd(req.body.password);
+
+//   // if (!isPasswordMatch) {
+//   //   return next(new ErrorHandler("Invalid old password", 400));
+//   // }
+
+//   // user.email = req.body.email;
+//   // user.verified = undefined;
+
+//   const token = user.otpGeneration();
+//   await user.save({ validateBeforeSave: false });
+
+//   const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
+
+//   try {
+//     await sendEmail({
+//       email: user.email,
+//       subject: `Carbon Project OTP `,
+//       message,
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Email OPT sent to ${user.email} successfully`,
+//     });
+//   } catch (error) {
+//     user.otpToken = undefined;
+//     user.optExpire = undefined;
+//     await user.save({ validateBeforeSave: false });
+
+//     return next(new ErrorHandler(error.message, 500));
+//   }
+// });
+
+exports.updateUserProfile = asyncErrorHandler(async (req, res, next) => {
+  const { firstName, lastName, email, avatar, password } = req.body;
+  const newUserData = {};
+
   const user = await User.findById(req.user.id).select("+password");
-  const isPasswordMatch = await user.comparePassowrd(req.body.oldPassword);
-
-  if (!isPasswordMatch) {
-    return next(new ErrorHandler("Invalid old password", 400));
+  if (!user) {
+    return next(new ErrorHandler("user not found with this ID", 404));
   }
-  if (req.body.newPassword !== req.body.confirmPassword) {
-    return next(new ErrorHandler("password does not match", 400));
+
+  if (
+    firstName !== "" &&
+    firstName !== undefined &&
+    lastName !== "" &&
+    lastName !== undefined
+  ) {
+    let uniqueName = `${firstName}${lastName}`;
+    const userName = await User.findOne({
+      userName: uniqueName,
+    });
+    if (userName?.userName) {
+      uniqueName = generateUsername(userName?.userName);
+    }
+    newUserData.userName = uniqueName;
+    newUserData.firstName = firstName;
+    newUserData.lastName = lastName;
   }
-  user.password = req.body.newPassword;
-  await user.save();
 
-  sendToken(user, 200, res);
-});
-
-exports.updateEmail = asyncErrorHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  // const user = await User.findById(req.user.id).select("+password");
-
-  // const isPasswordMatch = await user.comparePassowrd(req.body.password);
-
-  // if (!isPasswordMatch) {
-  //   return next(new ErrorHandler("Invalid old password", 400));
-  // }
-
-  user.email = req.body.email;
-  user.verified = undefined;
-
-  const token = user.otpGeneration();
-  await user.save({ validateBeforeSave: false });
-
-  const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
-
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: `Carbon Project OTP `,
-      message,
+  if (email !== "" && email !== undefined) {
+    const dublicateUser = await User.findOne({
+      "emails.email": email,
     });
 
-    res.status(200).json({
-      success: true,
-      message: `Email OPT sent to ${user.email} successfully`,
-    });
-  } catch (error) {
-    user.otpToken = undefined;
-    user.optExpire = undefined;
+    if (dublicateUser) {
+      return next(new ErrorHandler("dublicate email registered", 404));
+    }
+
+    user.emails.push({ email });
+    const token = user.otpGeneration();
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorHandler(error.message, 500));
+    const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
+
+    try {
+      await sendEmail({
+        email,
+        subject: `Carbon Project OTP`,
+        message,
+      });
+    } catch (error) {
+      user.otpToken = undefined;
+      user.optExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return next(new ErrorHandler(error.message, 500));
+    }
   }
-});
 
-exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
-  const newUserData = {
-    name: req.body.name,
-  };
-
-  if (req.body.password !== "" && req.body.password !== undefined) {
-    const user = await User.findById(req.user.id).select("+password");
-    user.password = req.body.password;
+  if (password !== "" && password !== undefined) {
+    // const user = await User.findById(req.user.id).select("+password");
+    user.password = password;
     await user.save();
   }
 
-  if (req.body.avatar !== "" && req.body.avatar !== undefined) {
-    const user = await User.findById(req.user.id);
+  if (avatar !== "" && avatar !== undefined) {
+    // const user = await User.findById(req.user.id);
     const imageId = user.avatar.public_id;
+
     if (imageId !== "random") {
       await cloudinary.v2.uploader.destroy(imageId);
     }
-    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-      folder: "avatars",
-      width: 150,
-      crop: "scale",
-    });
+
+    const myCloud = await cloudinary.v2.uploader.upload(
+      avatar,
+      // req.files.avatar.tempFilePath,
+      {
+        folder: "carbonAvatars",
+        width: 150,
+        crop: "scale",
+      }
+    );
     newUserData.avatar = {
       public_id: myCloud.public_id,
       url: myCloud.secure_url,
@@ -285,10 +349,18 @@ exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
     userFindandModify: false,
   });
 
-  res.status(200).json({
-    success: true,
-  });
+  if (email !== "" && email !== undefined) {
+    res.status(200).json({
+      success: true,
+      message: `Email OPT sent to ${email} successfully`,
+    });
+  } else {
+    res.status(200).json({
+      success: true,
+    });
+  }
 });
+
 // exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
 //   const newUserData = {
 //     name: req.body.name,
@@ -299,7 +371,7 @@ exports.updateUserProfile = asyncErrorHandler(async (req, res) => {
 //     const imageId = user.avatar.public_id;
 //     await cloudinary.v2.uploader.destroy(imageId);
 //     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-//       folder: "avatars",
+//       folder: "carbonAvatars",
 //       width: 150,
 //       crop: "scale",
 //     });
@@ -329,35 +401,52 @@ exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.validateOPT = asyncErrorHandler(async (req, res, next) => {
-  const otpToken = req.params.otp;
+  // const otpToken = req.params.otp;
+  const { email, otp } = req.body;
 
   const user = await User.findOne({
-    otpToken,
-    optExpire: { $gt: Date.now() },
+    "emails.email": email,
   });
 
   if (!user) {
-    return next(
-      new ErrorHandler("reset OTP token is invalid or has been expired", 400)
-    );
+    return next(new ErrorHandler("Email address not found", 404));
+  }
+  const emailObj = user.emails.find((e) => e.email === email);
+
+  if (emailObj.isVerified) {
+    return next(new ErrorHandler("Email address already verified", 400));
   }
 
-  user.otpToken = undefined;
-  user.optExpire = undefined;
-  user.verified = true;
-
-  await user.save();
-  sendToken(user, 200, res);
+  if (otp === user.otpToken) {
+    user.emails = [];
+    user.emails.push({ email, isVerified: true });
+    user.optExpire = undefined;
+    user.otpToken = undefined;
+    await user.save({ validateBeforeSave: false });
+    sendToken(user, 200, res);
+  } else {
+    return next(
+      new ErrorHandler("OTP token is invalid or has been expired", 400)
+    );
+  }
 });
 
 exports.resentOTP = asyncErrorHandler(async (req, res, next) => {
   const email = req.params.email;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    "emails.email": email,
+  });
 
   if (!user) {
-    return next(new ErrorHandler("user not found", 401));
+    return next(new ErrorHandler("user not found", 404));
   }
+  const emailObj = user.emails.find((e) => e.email === email);
+
+  if (emailObj.isVerified) {
+    return next(new ErrorHandler("Email address already verified", 400));
+  }
+
   const token = user.otpGeneration();
   await user.save({ validateBeforeSave: false });
 
@@ -365,14 +454,14 @@ exports.resentOTP = asyncErrorHandler(async (req, res, next) => {
 
   try {
     await sendEmail({
-      email: user.email,
+      email: email,
       subject: `Carbon Project OTP `,
       message,
     });
 
     res.status(200).json({
       success: true,
-      message: `Email sent to ${user.email} successfully`,
+      message: `Email sent to ${email} successfully`,
     });
   } catch (error) {
     user.otpToken = undefined;
@@ -401,7 +490,6 @@ exports.getsindleUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
-    // email: req.body.email,
     role: req.body.role,
   };
 

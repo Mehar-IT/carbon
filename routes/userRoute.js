@@ -6,8 +6,8 @@ const {
   forgotPassword,
   resetPassword,
   getUserDetails,
-  updatePassword,
-  updateEmail,
+  // updatePassword,
+  // updateEmail,
   updateUserProfile,
   getAllUsers,
   validateOPT,
@@ -21,14 +21,14 @@ const router = express.Router();
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
-router.route("/validateOTP/:otp").get(validateOPT);
-router.route("/resentOTP/:email").get(resentOTP);
+router.route("/validateOTP").post(validateOPT);
+router.route("/resentOTP/:email").post(resentOTP);
 router.route("/password/forgot").post(forgotPassword);
 router.route("/password/reset/:token").put(resetPassword);
 router.route("/logout").get(logoutUser);
-router.route("/password/update").put(isAuthenticated, updatePassword);
+// router.route("/password/update").put(isAuthenticated, updatePassword);
 router.route("/me/update").put(isAuthenticated, updateUserProfile);
-router.route("/me/updateEmail").put(isAuthenticated, updateEmail);
+// router.route("/me/updateEmail").put(isAuthenticated, updateEmail);
 router.route("/me/").get(isAuthenticated, getUserDetails);
 router
   .route("/admin/users")
