@@ -140,7 +140,7 @@ exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //   "host"
   // )}/api/v1/password/reset/${resetToken}`;
 
-  const frontend_url = `${process.env.FRONTEND_URL}/api/v1/password/reset${resetToken}`;
+  const frontend_url = `${process.env.FRONTEND_URL}/api/v1/password/reset/${resetToken}`;
 
   // const message = `your password reset token is :- \n\n ${resetPassword} \n\n If you have not requested this email then, please ignore it`;
   const message = `your password reset token is :- \n\n ${frontend_url} \n\n If you have not requested this email then, please ignore it`;
