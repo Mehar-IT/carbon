@@ -6,6 +6,7 @@ const fund = require("./routes/fundRoute");
 const tax = require("./routes/taxRoute");
 const plan = require("./routes/planRoute");
 const subscription = require("./routes/subscriptionRoute");
+const ratio = require("./routes/ratioRoute");
 const errorMiddleWare = require("./middleware/error");
 const notFoundError = require("./middleware/404");
 const cookieParser = require("cookie-parser");
@@ -33,6 +34,7 @@ app.use("/api/v1", fund);
 app.use("/api/v1", tax);
 app.use("/api/v1", plan);
 app.use("/api/v1", subscription);
+app.use("/api/v1", ratio);
 
 app.use(notFoundError);
 app.use(errorMiddleWare);
