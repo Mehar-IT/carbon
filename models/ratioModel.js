@@ -7,6 +7,10 @@ const ratioSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    basketName: {
+      type: String,
+      require: true,
+    },
     ratios: [
       {
         ratio: {

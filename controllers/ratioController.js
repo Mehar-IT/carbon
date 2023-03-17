@@ -4,9 +4,10 @@ const asyncErrorHandler = require("../middleware/asyncErrorHandler");
 const ErrorHandler = require("../utils/errorHandlers");
 
 exports.createRatio = asyncErrorHandler(async (req, res, next) => {
-  const { ratios } = req.body;
+  const { ratios, basketName } = req.body;
   const ratio = await Ratio({
     user: req.user._id,
+    basketName,
     ratios,
   });
 
@@ -27,11 +28,11 @@ exports.getAllRatio = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.updateRatio = asyncErrorHandler(async (req, res, next) => {
-  const { ratios } = req.body;
+  const { ratios, basketName } = req.body;
   const { id } = req.params;
   const ratio = await Ratio.findByIdAndUpdate(
     id,
-    { ratios },
+    { ratios, basketName },
     {
       new: true,
       runValidators: true,
