@@ -7,18 +7,41 @@ const {
   deleteRatio,
 } = require("../controllers/ratioController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const {
+  isAuthenticated,
+  authorizeRole,
+  authorizeByAdmin,
+} = require("../middleware/auth");
 
 router
   .route("/createRatio")
-  .post(isAuthenticated, authorizeRole("admin"), createRatio);
-router.route("/getAllRatio").get(isAuthenticated, getAllRatio);
+  .post(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    createRatio
+  );
+router
+  .route("/getAllRatio")
+  .get(isAuthenticated, authorizeByAdmin(true), getAllRatio);
 router
   .route("/updateRatio/:id")
-  .put(isAuthenticated, authorizeRole("admin"), updateRatio);
-router.route("/getSingleRatio/:id").get(isAuthenticated, getSingleRatio);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    updateRatio
+  );
+router
+  .route("/getSingleRatio/:id")
+  .get(isAuthenticated, authorizeByAdmin(true), getSingleRatio);
 router
   .route("/deleteRatio/:id")
-  .delete(isAuthenticated, authorizeRole("admin"), deleteRatio);
+  .delete(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    deleteRatio
+  );
 
 module.exports = router;

@@ -14,6 +14,21 @@ exports.isAuthenticated = asyncErrorHandler(async (req, res, next) => {
   next();
 });
 
+exports.authorizeByAdmin = (approve) => {
+  return (req, res, next) => {
+    // if (!roles.includes(req.user.role)) {
+    if (approve !== req.user.approveByAdmin) {
+      return next(
+        new ErrorHandler(
+          `you are not approved by Admin wait for your approval`,
+          403
+        )
+      );
+    }
+    next();
+  };
+};
+
 exports.authorizeRole = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

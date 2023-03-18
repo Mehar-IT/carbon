@@ -409,6 +409,7 @@ exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     role: req.body.role,
+    approveByAdmin: req.body.approveByAdmin,
   };
 
   const user = await User.findByIdAndUpdate(req.params.id, newUserData, {

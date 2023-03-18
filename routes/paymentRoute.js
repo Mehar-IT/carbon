@@ -6,10 +6,14 @@ const {
   // createPlan,
 } = require("../controllers/paymentController");
 const router = express.Router();
-const { isAuthenticated } = require("../middleware/auth");
+const { isAuthenticated, authorizeByAdmin } = require("../middleware/auth");
 
-router.route("/payment/process").post(isAuthenticated, processPayment);
-router.route("/stripeapikey").get(isAuthenticated, sendStripeApiKey);
+router
+  .route("/payment/process")
+  .post(isAuthenticated, authorizeByAdmin(true), processPayment);
+router
+  .route("/stripeapikey")
+  .get(isAuthenticated, authorizeByAdmin(true), sendStripeApiKey);
 
 // router.route("/payment/refundPayment").get(isAuthenticated, refundPayment);
 // router

@@ -7,19 +7,42 @@ const {
   deleteTax,
 } = require("../controllers/taxController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const {
+  isAuthenticated,
+  authorizeRole,
+  authorizeByAdmin,
+} = require("../middleware/auth");
 
 router
   .route("/createTax")
-  .post(isAuthenticated, authorizeRole("admin"), createTax);
-router.route("/getSingleTax/:id").get(isAuthenticated, getSingleTax);
-router.route("/getAllTaxes").get(isAuthenticated, getallTaxes);
+  .post(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    createTax
+  );
+router
+  .route("/getSingleTax/:id")
+  .get(isAuthenticated, authorizeByAdmin(true), getSingleTax);
+router
+  .route("/getAllTaxes")
+  .get(isAuthenticated, authorizeByAdmin(true), getallTaxes);
 
 router
   .route("/updateTax/:id")
-  .put(isAuthenticated, authorizeRole("admin"), updateTaxes);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    updateTaxes
+  );
 router
   .route("/deleteTax/:id")
-  .delete(isAuthenticated, authorizeRole("admin"), deleteTax);
+  .delete(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    deleteTax
+  );
 
 module.exports = router;

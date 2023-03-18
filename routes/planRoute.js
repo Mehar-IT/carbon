@@ -7,22 +7,51 @@ const {
   deletePlan,
 } = require("../controllers/planController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const {
+  isAuthenticated,
+  authorizeRole,
+  authorizeByAdmin,
+} = require("../middleware/auth");
 
 router
   .route("/createPlan")
-  .post(isAuthenticated, authorizeRole("admin"), createPlan);
+  .post(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    createPlan
+  );
 router
   .route("/getSinglePlan/:id")
-  .get(isAuthenticated, authorizeRole("admin"), getSinglePlan);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    getSinglePlan
+  );
 router
   .route("/getallPlans")
-  .get(isAuthenticated, authorizeRole("admin"), getallPlans);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    getallPlans
+  );
 router
   .route("/updatePlan/:id")
-  .put(isAuthenticated, authorizeRole("admin"), updatePlan);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    updatePlan
+  );
 router
   .route("/deletePlan/:id")
-  .delete(isAuthenticated, authorizeRole("admin"), deletePlan);
+  .delete(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    deletePlan
+  );
 
 module.exports = router;

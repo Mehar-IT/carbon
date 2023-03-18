@@ -8,21 +8,34 @@ const {
   getallSubscriptions,
 } = require("../controllers/subscriptionController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const {
+  isAuthenticated,
+  authorizeRole,
+  authorizeByAdmin,
+} = require("../middleware/auth");
 
-router.route("/addSubscription").post(isAuthenticated, addSubscription);
+router
+  .route("/addSubscription")
+  .post(isAuthenticated, authorizeByAdmin(true), addSubscription);
 router
   .route("/getallSubscriptions")
-  .get(isAuthenticated, authorizeRole("admin"), getallSubscriptions);
-router.route("/mySubscriptions").get(isAuthenticated, mySubscriptions);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    getallSubscriptions
+  );
+router
+  .route("/mySubscriptions")
+  .get(isAuthenticated, authorizeByAdmin(true), mySubscriptions);
 router
   .route("/getSingleSubscription/:id")
-  .get(isAuthenticated, getSingleSubscription);
+  .get(isAuthenticated, authorizeByAdmin(true), getSingleSubscription);
 router
   .route("/updateUserSubscription/:id")
-  .put(isAuthenticated, updateUserSubscription);
+  .put(isAuthenticated, authorizeByAdmin(true), updateUserSubscription);
 router
   .route("/deleteUserSubscription/:id")
-  .delete(isAuthenticated, deleteUserSubscription);
+  .delete(isAuthenticated, authorizeByAdmin(true), deleteUserSubscription);
 
 module.exports = router;

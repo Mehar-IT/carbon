@@ -9,25 +9,56 @@ const {
   addFundByAdmin,
 } = require("../controllers/fundController");
 const router = express.Router();
-const { isAuthenticated, authorizeRole } = require("../middleware/auth");
+const {
+  isAuthenticated,
+  authorizeRole,
+  authorizeByAdmin,
+} = require("../middleware/auth");
 
-router.route("/addfund").post(isAuthenticated, addFund);
+router.route("/addfund").post(isAuthenticated, authorizeByAdmin(true), addFund);
 router
   .route("/getSinglefund/:id")
-  .get(isAuthenticated, authorizeRole("admin"), getSinglefund);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    getSinglefund
+  );
 router
   .route("/getallfunds")
-  .get(isAuthenticated, authorizeRole("admin"), getallfunds);
-router.route("/getmyfunds/:userId").get(isAuthenticated, myfunds);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    getallfunds
+  );
+router
+  .route("/getmyfunds/:userId")
+  .get(isAuthenticated, authorizeByAdmin(true), myfunds);
 router
   .route("/updateUserFund/:id")
-  .put(isAuthenticated, authorizeRole("admin"), updateUserFund);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    updateUserFund
+  );
 router
   .route("/addFundByAdmin/:id")
-  .put(isAuthenticated, authorizeRole("admin"), addFundByAdmin);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    addFundByAdmin
+  );
 
 router
   .route("/deletefund/:id")
-  .delete(isAuthenticated, authorizeRole("admin"), deleteUserFund);
+  .delete(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    deleteUserFund
+  );
 
 module.exports = router;
