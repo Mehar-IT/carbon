@@ -35,7 +35,10 @@ router
   .put(isAuthenticated, authorizeByAdmin(true), updateUserProfile);
 router
   .route("/me/")
-  .get(isAuthenticated, authorizeByAdmin(true), getUserDetails);
+  .get(isAuthenticated, getUserDetails);
+// router
+//   .route("/me/")
+//   .get(isAuthenticated, authorizeByAdmin(true), getUserDetails);
 router
   .route("/admin/users")
   .get(
