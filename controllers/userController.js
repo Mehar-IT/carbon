@@ -110,6 +110,12 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
       return next(new ErrorHandler(error.message, 500));
     }
   }
+  if (!user.approveByAdmin) {
+    return res.status(200).json({
+      success: true,
+      message: `you are not approved by admin wait for your approval`,
+    });
+  }
 
   sendToken(user, 200, res);
 });
