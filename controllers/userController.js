@@ -324,7 +324,7 @@ exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-exports.validateOPT = asyncErrorHandler(async (req, res, next) => {
+exports.validateOTP = asyncErrorHandler(async (req, res, next) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({
@@ -417,18 +417,55 @@ exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
     role: req.body.role,
     approveByAdmin: req.body.approveByAdmin,
   };
+  const { password, email } = req.body;
 
   const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
     new: true,
     runValidators: true,
     userFindandModify: false,
-  });
+  }).select("+password");
 
   if (!user) {
     return next(
       new ErrorHandler(`user not found with id ${req.params.id}`, 404)
     );
   }
+
+  if (password !== "" && password !== undefined) {
+    user.password = password;
+    await user.save();
+  }
+
+  if (email !== "" && email !== undefined) {
+    const dublicateUser = await User.findOne({
+      "emails.email": email,
+    });
+
+    if (dublicateUser) {
+      return next(new ErrorHandler("this email is already registered", 404));
+    }
+
+    user.emails.push({ email });
+    const token = user.otpGeneration();
+    await user.save({ validateBeforeSave: false });
+
+    const message = `your OTP token is :- \n\n ${token} \n\n If you have not requested this OTP then, please ignore it`;
+
+    try {
+      await sendEmail({
+        email,
+        subject: `Carbon Project OTP`,
+        message,
+      });
+    } catch (error) {
+      user.otpToken = undefined;
+      user.optExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+
   res.status(200).json({
     success: true,
   });

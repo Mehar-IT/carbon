@@ -10,7 +10,7 @@ const {
   // updateEmail,
   updateUserProfile,
   getAllUsers,
-  validateOPT,
+  validateOTP,
   resentOTP,
   getsindleUserByAdmin,
   updateUserByAdmin,
@@ -25,7 +25,7 @@ const router = express.Router();
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
-router.route("/validateOTP").post(validateOPT);
+router.route("/validateOTP").post(validateOTP);
 router.route("/resentOTP/:email").post(resentOTP);
 router.route("/password/forgot").post(forgotPassword);
 router.route("/password/reset/:token").put(resetPassword);
