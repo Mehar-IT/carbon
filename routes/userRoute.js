@@ -15,6 +15,7 @@ const {
   getsindleUserByAdmin,
   updateUserByAdmin,
   deleteUserByAdmin,
+  approveUserByAdmin,
 } = require("../controllers/userController");
 const {
   isAuthenticated,
@@ -33,9 +34,7 @@ router.route("/logout").get(logoutUser);
 router
   .route("/me/update")
   .put(isAuthenticated, authorizeByAdmin(true), updateUserProfile);
-router
-  .route("/me/")
-  .get(isAuthenticated, getUserDetails);
+router.route("/me/").get(isAuthenticated, getUserDetails);
 // router
 //   .route("/me/")
 //   .get(isAuthenticated, authorizeByAdmin(true), getUserDetails);
@@ -67,6 +66,14 @@ router
     authorizeByAdmin(true),
     authorizeRole("admin"),
     deleteUserByAdmin
+  );
+router
+  .route("/admin/users/approval/:id")
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    approveUserByAdmin
   );
 // router.route("/password/update").put(isAuthenticated, updatePassword);
 // router.route("/me/updateEmail").put(isAuthenticated, updateEmail);

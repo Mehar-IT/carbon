@@ -411,13 +411,13 @@ exports.getsindleUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 });
 
 exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
+  // const { password, email, firstName, lastName, role, approveByAdmin } =
+  const { password, email, firstName, lastName, role } = req.body;
   const newUserData = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    role: req.body.role,
-    approveByAdmin: req.body.approveByAdmin,
+    firstName,
+    lastName,
+    role,
   };
-  const { password, email } = req.body;
 
   const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
     new: true,
@@ -464,6 +464,29 @@ exports.updateUserByAdmin = asyncErrorHandler(async (req, res, next) => {
 
       return next(new ErrorHandler(error.message, 500));
     }
+  }
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+exports.approveUserByAdmin = asyncErrorHandler(async (req, res, next) => {
+  const { approveByAdmin } = req.body;
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { approveByAdmin },
+    {
+      new: true,
+      runValidators: true,
+      userFindandModify: false,
+    }
+  );
+  if (!user) {
+    return next(
+      new ErrorHandler(`user not found with id ${req.params.id}`, 404)
+    );
   }
 
   res.status(200).json({
