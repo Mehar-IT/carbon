@@ -39,6 +39,23 @@ exports.authorizeRole = (...roles) => {
         )
       );
     }
+    if (req.params.id === req.user._id.toString()) {
+      return next(
+        new ErrorHandler(
+          "You are not authorized to update your own account",
+          403
+        )
+      );
+    }
     next();
   };
 };
+
+exports.authorizePermisions = asyncErrorHandler(async (req, res, next) => {
+  if (!req.user?.permissions.includes(req.method)) {
+    return next(
+      new ErrorHandler(`you are not allowed to the '${req.method}' method`, 403)
+    );
+  }
+  next();
+});

@@ -4,6 +4,13 @@ const bcryptjs = require("bcryptjs");
 const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 
+const PermissionsSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+  },
+});
+
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -67,6 +74,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
+  permissions: {
+    type: [
+      {
+        type: String,
+        enum: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+      },
+    ],
+    default: undefined,
+  },
+
+  // permissions: [PermissionsSchema],
+
   approveByAdmin: {
     type: Boolean,
     default: false,

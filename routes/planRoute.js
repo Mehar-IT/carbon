@@ -11,6 +11,7 @@ const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 
 router
@@ -19,6 +20,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     createPlan
   );
 router
@@ -27,6 +29,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getSinglePlan
   );
 router
@@ -35,6 +38,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getallPlans
   );
 router
@@ -43,6 +47,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updatePlan
   );
 router
@@ -51,6 +56,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deletePlan
   );
 

@@ -13,6 +13,7 @@ const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 
 router.route("/addfund").post(isAuthenticated, authorizeByAdmin(true), addFund);
@@ -22,7 +23,8 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
-    getSinglefund
+    getSinglefund,
+    authorizePermisions
   );
 router
   .route("/getallfunds")
@@ -30,17 +32,19 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getallfunds
   );
 router
   .route("/getmyfunds/:userId")
-  .get(isAuthenticated, authorizeByAdmin(true), myfunds);
+  .get(isAuthenticated, authorizeByAdmin(true), authorizePermisions, myfunds);
 router
   .route("/updateUserFund/:id")
   .put(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updateUserFund
   );
 router
@@ -49,6 +53,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     addFundByAdmin
   );
 
@@ -58,6 +63,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deleteUserFund
   );
 

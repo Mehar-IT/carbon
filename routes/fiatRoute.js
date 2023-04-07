@@ -12,15 +12,19 @@ const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 
-router.route("/addFiat").post(isAuthenticated, authorizeByAdmin(true), addFiat);
+router
+  .route("/addFiat")
+  .post(isAuthenticated, authorizeByAdmin(true), authorizePermisions, addFiat);
 router
   .route("/getSinglefiat/:id")
   .get(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getSingleFiat
   );
 router
@@ -29,17 +33,19 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getallFiats
   );
 router
   .route("/getmyfiats")
-  .get(isAuthenticated, authorizeByAdmin(true), myFiats);
+  .get(isAuthenticated, authorizeByAdmin(true), authorizePermisions, myFiats);
 router
   .route("/updateFiat/:id")
   .put(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updateFiat
   );
 router
@@ -48,6 +54,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deleteFiat
   );
 

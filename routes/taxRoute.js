@@ -11,6 +11,7 @@ const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 
 router
@@ -19,14 +20,25 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     createTax
   );
 router
   .route("/getSingleTax/:id")
-  .get(isAuthenticated, authorizeByAdmin(true), getSingleTax);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizePermisions,
+    getSingleTax
+  );
 router
   .route("/getAllTaxes")
-  .get(isAuthenticated, authorizeByAdmin(true), getallTaxes);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizePermisions,
+    getallTaxes
+  );
 
 router
   .route("/updateTax/:id")
@@ -34,6 +46,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updateTaxes
   );
 router
@@ -42,6 +55,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deleteTax
   );
 

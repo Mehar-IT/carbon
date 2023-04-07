@@ -16,11 +16,13 @@ const {
   updateUserByAdmin,
   deleteUserByAdmin,
   approveUserByAdmin,
+  updateUserPermisionsByAdmin,
 } = require("../controllers/userController");
 const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 const router = express.Router();
 
@@ -33,7 +35,12 @@ router.route("/password/reset/:token").put(resetPassword);
 router.route("/logout").get(logoutUser);
 router
   .route("/me/update")
-  .put(isAuthenticated, authorizeByAdmin(true), updateUserProfile);
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizePermisions,
+    updateUserProfile
+  );
 router.route("/me/").get(isAuthenticated, getUserDetails);
 // router
 //   .route("/me/")
@@ -44,6 +51,7 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getAllUsers
   );
 
@@ -53,18 +61,21 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     getsindleUserByAdmin
   )
   .put(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updateUserByAdmin
   )
   .delete(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deleteUserByAdmin
   );
 router
@@ -73,7 +84,17 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     approveUserByAdmin
+  );
+router
+  .route("/admin/users/updateUserPermisionsByAdmin/:id")
+  .put(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizeRole("admin"),
+    authorizePermisions,
+    updateUserPermisionsByAdmin
   );
 // router.route("/password/update").put(isAuthenticated, updatePassword);
 // router.route("/me/updateEmail").put(isAuthenticated, updateEmail);

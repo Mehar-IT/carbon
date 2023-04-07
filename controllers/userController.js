@@ -100,7 +100,7 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
 
       return res.status(200).json({
         success: true,
-        message: `you are not Verified!!! OPT sent to ${email} successfully`,
+        message: `you are not Verified your email!!! OPT is sent to ${email} successfully`,
       });
     } catch (error) {
       user.otpToken = undefined;
@@ -346,7 +346,14 @@ exports.validateOTP = asyncErrorHandler(async (req, res, next) => {
     user.optExpire = undefined;
     user.otpToken = undefined;
     await user.save({ validateBeforeSave: false });
-    sendToken(user, 200, res);
+    // if (!user.approveByAdmin) {
+    // return
+    res.status(200).json({
+      success: true,
+      message: `you approved your email and your request is submitted to admin wait for approval by admin`,
+    });
+    // }
+    // sendToken(user, 200, res);
   } else {
     return next(
       new ErrorHandler("OTP token is invalid or has been expired", 400)
@@ -493,6 +500,32 @@ exports.approveUserByAdmin = asyncErrorHandler(async (req, res, next) => {
     success: true,
   });
 });
+
+exports.updateUserPermisionsByAdmin = asyncErrorHandler(
+  async (req, res, next) => {
+    const { permissions } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { permissions },
+      {
+        new: true,
+        runValidators: true,
+        userFindandModify: false,
+      }
+    );
+
+    if (!user) {
+      return next(
+        new ErrorHandler(`user not found with id ${req.params.id}`, 404)
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+    });
+  }
+);
 
 exports.deleteUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);

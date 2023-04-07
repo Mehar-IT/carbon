@@ -11,6 +11,7 @@ const {
   isAuthenticated,
   authorizeRole,
   authorizeByAdmin,
+  authorizePermisions,
 } = require("../middleware/auth");
 
 router
@@ -19,28 +20,41 @@ router
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     createRatio
   );
 router
   .route("/getAllRatio")
-  .get(isAuthenticated, authorizeByAdmin(true), getAllRatio);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizePermisions,
+    getAllRatio
+  );
 router
   .route("/updateRatio/:id")
   .put(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     updateRatio
   );
 router
   .route("/getSingleRatio/:id")
-  .get(isAuthenticated, authorizeByAdmin(true), getSingleRatio);
+  .get(
+    isAuthenticated,
+    authorizeByAdmin(true),
+    authorizePermisions,
+    getSingleRatio
+  );
 router
   .route("/deleteRatio/:id")
   .delete(
     isAuthenticated,
     authorizeByAdmin(true),
     authorizeRole("admin"),
+    authorizePermisions,
     deleteRatio
   );
 
