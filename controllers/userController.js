@@ -5,6 +5,7 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
+const ethers = require("ethers");
 
 function generateUsername(name) {
   const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -115,6 +116,12 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
       success: true,
       message: `you are not approved by admin wait for your approval`,
     });
+  }
+
+  if (!user.wallet) {
+    const wallet = ethers.Wallet.createRandom();
+    user.wallet = wallet;
+    await user.save({ validateBeforeSave: false });
   }
 
   sendToken(user, 200, res);
