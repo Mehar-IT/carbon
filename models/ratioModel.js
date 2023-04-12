@@ -13,6 +13,10 @@ const ratioSchema = new mongoose.Schema(
     },
     ratios: [
       {
+        name: {
+          type: String,
+          required: true,
+        },
         ratio: {
           type: Number,
           required: true,
@@ -20,6 +24,18 @@ const ratioSchema = new mongoose.Schema(
           max: 100,
         },
         price: {
+          type: Number,
+          required: true,
+        },
+        target_count: {
+          type: Number,
+          required: true,
+        },
+        hours_high: {
+          type: Number,
+          required: true,
+        },
+        hours_low: {
           type: Number,
           required: true,
         },
