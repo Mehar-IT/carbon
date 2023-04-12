@@ -17,6 +17,7 @@ const {
   deleteUserByAdmin,
   approveUserByAdmin,
   updateUserPermisionsByAdmin,
+  generateUserWallet,
 } = require("../controllers/userController");
 const {
   isAuthenticated,
@@ -41,10 +42,13 @@ router
     authorizePermisions,
     updateUserProfile
   );
-router.route("/me/").get(isAuthenticated, getUserDetails);
+router.route("/me").get(isAuthenticated, getUserDetails);
 // router
 //   .route("/me/")
 //   .get(isAuthenticated, authorizeByAdmin(true), getUserDetails);
+router
+  .route("/generateUserWallet")
+  .get(isAuthenticated, authorizeByAdmin(true), generateUserWallet);
 router
   .route("/admin/users")
   .get(

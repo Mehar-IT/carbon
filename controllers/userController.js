@@ -118,12 +118,6 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
     });
   }
 
-  if (!user.wallet) {
-    const wallet = ethers.Wallet.createRandom();
-    user.wallet = wallet;
-    await user.save({ validateBeforeSave: false });
-  }
-
   sendToken(user, 200, res);
 });
 
@@ -533,6 +527,24 @@ exports.updateUserPermisionsByAdmin = asyncErrorHandler(
     });
   }
 );
+
+exports.generateUserWallet = asyncErrorHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(
+      new ErrorHandler(`user not found with id ${req.params.id}`, 404)
+    );
+  }
+
+  const wallet = ethers.Wallet.createRandom();
+  user.wallet = wallet;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
 
 exports.deleteUserByAdmin = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
